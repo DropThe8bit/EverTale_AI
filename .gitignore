@@ -1,0 +1,50 @@
+# Python 기본
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+dist/
+build/
+
+# Conda 가상환경 (로컬 환경이므로 제외)
+.env
+.venv/
+env/
+venv/
+*.env
+*.env.*
+
+# PyCharm
+.idea/
+*.iml
+
+# Jupyter / VSCode
+.ipynb_checkpoints/
+.vscode/
+
+# 로그 & 캐시
+*.log
+*.sqlite3
+.cache/
+*.db
+.DS_Store
+
+# 모델/데이터 다운로드 캐시
+models/
+outputs/
+*.ckpt
+*.safetensors
+
+# 생성된 이미지 (Stable Diffusion output)
+*.png
+*.jpg
+*.jpeg
+output_*.png
+
+# pip freeze 파일 (협업 시 필요하면 수동 관리)
+# requirements.txt는 보통 추적함
+# requirements-dev.txt
+
+# Hugging Face token/token cache
+~/.huggingface/
+huggingface/
