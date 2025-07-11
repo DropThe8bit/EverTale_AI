@@ -4,16 +4,17 @@ from fastapi import File, UploadFile, Form
 from fastapi.responses import JSONResponse
 
 from . import dto
-from . import image_service
-from . import story_service
+from .service import image_service, quiz_service, story_service
 
 router = APIRouter(prefix="/ai")
 
 @router.post("/init", response_model=dto.InitStoryResponse)
 def create_init_story(request: dto.InitStoryRequest):
     story = story_service.generate_story_from_character_info(
+        genre=request.genre,
+        world_view=request.worldView,
         title=request.title,
-        name=request.characterName,
+        name=request.name,
         age=request.age,
         gender=request.gender,
         personalities=request.personalities
@@ -24,8 +25,10 @@ def create_init_story(request: dto.InitStoryRequest):
 def create_next_story(request: dto.NextStoryRequest):
     prompt = story_service.generate_prompt_for_next_story(
         previous=request.previous,
+        scene_number=request.sceneNum,
+        genre=request.genre,
         title=request.title,
-        name=request.characterName,
+        name=request.name,
         age=request.age,
         gender=request.gender,
         personalities=request.personalities
@@ -55,11 +58,28 @@ def create_next_story_with_answer(request: dto.NextFromAnswerRequest):
     return {"message": story}
 
 
-@router.post("/generate-image/")
-async def generate_image(
+@router.post("/generate-controlnet-image")
+async def generate_controlnet_image(
+    sketch: UploadFile = File(...),
     prompt: str = Form(...),
-    sketch: UploadFile = File(...)
+    genre: str = Form(...)
 ):
     sketch_bytes = await sketch.read()
-    image_url = image_service.generate_image_from_sketch(sketch_bytes, prompt)
+    image_url = image_service.generate_controlnet_image(sketch_bytes, prompt, genre)
     return JSONResponse(content={"image_url": image_url})
+
+@router.post("/generate-dalle-image")
+async def generate_dalle_image(request: dto.DalleImageRequest):
+    try:
+        image_url = image_service.generate_dalle_image(request.prompt, request.genre)
+        return JSONResponse(content={"image_url": image_url})
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+@router.post("/generate-quiz", response_model=dto.QuizResponse)
+def create_quiz(request: dto.QuizRequest):
+    try:
+        quiz = quiz_service.generate_quiz_from_story(request.previous)
+        return quiz
+    except ValueError as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
