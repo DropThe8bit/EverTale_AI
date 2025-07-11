@@ -18,8 +18,11 @@ def generate_quiz_from_story(story_text: str) -> dict:
 형식 예시:
 {{
   "question": "주인공이 들고 간 물건은 무엇인가요?",
-  "options": ["사과", "책", "우산", "도토리"],
-  "answer_index": 3
+  "option1": "사과',
+  "option2": "책",
+  "option3": "우산",
+  "option4": "도토리",
+  "answer": "OPTION3"
 }}
 
 동화 줄거리:

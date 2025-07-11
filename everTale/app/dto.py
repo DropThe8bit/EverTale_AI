@@ -16,10 +16,10 @@ class InitStoryResponse(BaseModel):
 
 class NextStoryRequest(BaseModel):
     previous: str = Field(..., json_schema_extra={"example": "토토로는 첫 여행지로 북부의 마탑으로 향했어요. 그녀는 마법을 배우고 싶어해요"})
-    sceneNum: str = Field(..., json_schema_extra={"example": "2"})
+    sceneNum: int = Field(..., json_schema_extra={"example": "2"})
     genre: str = Field(..., json_schema_extra={"example": "ADVENTURE"})
     title: str = Field(..., json_schema_extra={"example": "토토로의 모험 여행"})
-    characterName: str = Field(..., json_schema_extra={"example": "토토로"})
+    name: str = Field(..., json_schema_extra={"example": "토토로"})
     age: int = Field(..., json_schema_extra={"example": 8})
     gender: str = Field(..., json_schema_extra={"example": "female"})
     personalities: List[str] = Field(..., json_schema_extra={"example": ["용감함", "씩씩함"]})
@@ -52,8 +52,11 @@ class QuizRequest(BaseModel):
 
 class QuizResponse(BaseModel):
     question: str
-    options: List[str]
-    answer_index: int
+    option1: str
+    option2: str
+    option3: str
+    option4: str
+    answer: str
 
 class DalleImageRequest(BaseModel):
     prompt: str = Field(...,json_schema_extra={"example":"A cute rabbit flying with balloons across the sky"})
@@ -71,4 +74,3 @@ class ControlNetImageRequest(BaseModel):
                 "genre": "모험"
             }
         }
-
