@@ -119,9 +119,20 @@ def play_voice(request: dto.TTSRequest):
         return StreamingResponse(audio_stream, media_type="audio/mpeg")
     
     except ValueError as e:
-        print("[play_voice] ValueError 발생:", str(e))
-        raise HTTPException(status_code=500, detail=str(e))
+        return JSONResponse(status_code=500, content={"error": str(e)})
     
     except Exception as e:
-        print("[play_voice] 예기치 못한 오류:", repr(e))
-        raise HTTPException(status_code=500, detail="서버 내부 오류 발생")
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+@router.post("/voice/delete", summary="음성 삭제 API", description="voice_key를 받아 ElevenLabs에서 해당 음성을 삭제합니다.")
+def delete_voice(request: dto.DeleteVoiceRequest):
+    try:
+        result = voice_cloning_service.delete_voice(request.voice_key)
+
+        if result:
+            return JSONResponse(content={"message": "음성이 성공적으로 삭제되었습니다."})
+        else:
+            return JSONResponse(status_code=500, content={"error": "삭제 실패 또는 voice_key가 존재하지 않습니다."})
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})

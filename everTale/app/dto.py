@@ -86,3 +86,10 @@ class TTSRequest(BaseModel):
         description="복제된 음성으로 재생할 텍스트",
         json_schema_extra={"example": "안녕, 오늘은 어떤 이야기를 들려줄까?"}
     )
+
+class DeleteVoiceRequest(BaseModel):
+    voice_key: str = Field(
+        ...,
+        description="삭제할 voice_key",
+        json_schema_extra={"example": "9c74576ba45e6852f1c7d03"}
+    )
