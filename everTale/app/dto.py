@@ -74,3 +74,15 @@ class ControlNetImageRequest(BaseModel):
                 "genre": "모험"
             }
         }
+
+class TTSRequest(BaseModel):
+    voice_key: str = Field(
+        ...,
+        description="ElevenLabs에서 발급받은 voice_key (예: '9c74576ba45e6852f1c7d03')",
+        json_schema_extra={"example": "9c74576ba45e6852f1c7d03"}
+    )
+    text: str = Field(
+        ...,
+        description="복제된 음성으로 재생할 텍스트",
+        json_schema_extra={"example": "안녕, 오늘은 어떤 이야기를 들려줄까?"}
+    )

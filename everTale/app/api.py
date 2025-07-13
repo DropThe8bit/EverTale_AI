@@ -1,10 +1,12 @@
 
-from fastapi import APIRouter
+import os, shutil, uuid
+
+from fastapi import APIRouter, HTTPException
 from fastapi import File, UploadFile, Form
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from . import dto
-from .service import image_service, quiz_service, story_service
+from .service import image_service, quiz_service, story_service, voice_cloning_service
 
 router = APIRouter(prefix="/ai")
 
@@ -83,3 +85,43 @@ def create_quiz(request: dto.QuizRequest):
         return quiz
     except ValueError as e:
         return JSONResponse(status_code=500, content={"error": str(e)})
+    
+@router.post("/voice/register")
+async def upload_voice(
+    file: UploadFile = File(...),
+    voice_name: str = Form(...)
+):
+    try:
+        temp_filename = f"temp_{uuid.uuid4().hex}_{file.filename}"
+        temp_path = os.path.join("/tmp", temp_filename)
+
+        with open(temp_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+        voice_id = voice_cloning_service.record_voice(temp_path, voice_name)
+
+        os.remove(temp_path)
+
+        if voice_id:
+            return JSONResponse(content={"voice_id": voice_id})
+        else:
+            return JSONResponse(status_code=500, content={"error": "Voice cloning failed."})
+
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+
+@router.post("/voice/play", summary="음성 합성 API", description="voice_key와 텍스트를 받아 음성 스트림을 반환합니다.")
+def play_voice(request: dto.TTSRequest):
+    try:
+        audio_stream = voice_cloning_service.synthesize_voice(
+            request.voice_key,
+            request.text
+        )
+        return StreamingResponse(audio_stream, media_type="audio/mpeg")
+    
+    except ValueError as e:
+        print("[play_voice] ValueError 발생:", str(e))
+        raise HTTPException(status_code=500, detail=str(e))
+    
+    except Exception as e:
+        print("[play_voice] 예기치 못한 오류:", repr(e))
+        raise HTTPException(status_code=500, detail="서버 내부 오류 발생")
