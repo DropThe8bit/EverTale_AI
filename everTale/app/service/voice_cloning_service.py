@@ -85,3 +85,22 @@ def synthesize_voice(voice_id: str, text: str) -> BytesIO:
         raise ValueError(f"음성 합성 실패: {response.status_code} {response.text}")
 
     return BytesIO(response.content)
+
+def delete_voice(voice_id: str) -> bool:
+    """
+    ElevenLabs API를 통해 지정된 voice_id를 삭제합니다.
+    :param voice_id: 삭제할 voice_id
+    :return: 성공 시 True, 실패 시 False
+    """
+    url = f"https://api.elevenlabs.io/v1/voices/{voice_id}"
+
+    headers = {
+        "xi-api-key": ELEVEN_API_KEY
+    }
+
+    response = requests.delete(url, headers=headers)
+
+    if response.status_code == 200:
+        return True
+    else:
+        return False
