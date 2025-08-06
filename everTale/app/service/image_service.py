@@ -36,12 +36,18 @@ controlnet = ControlNetModel.from_pretrained(
     "lllyasviel/sd-controlnet-scribble", torch_dtype=torch.float32
 )
 
+device = (
+    "cuda" if torch.cuda.is_available()
+    else "mps" if torch.backends.mps.is_available()
+    else "cpu"
+)
+
 pipe = StableDiffusionControlNetPipeline.from_pretrained(
     "dreamlike-art/dreamlike-anime-1.0",
     controlnet=controlnet,
     torch_dtype=torch.float32,
     use_auth_token=HF_TOKEN
-).to("mps")
+).to(device)
 
 pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
 
