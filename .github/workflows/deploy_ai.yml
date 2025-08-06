@@ -1,0 +1,44 @@
+name: Deploy EverTale_AI
+
+on:
+  push:
+    branches: [ develop ]
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. 코드 체크아웃
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      # 2 .env 파일 생성
+      - name: Create .env file
+        run: |
+          echo "${{ secrets.FASTAPI_ENV }}" > .env
+        shell: bash
+
+      # 3. DockerHub 로그인 & 이미지 빌드/푸시
+      - name: Docker build & push
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+          docker build -t ${{ secrets.DOCKER_REPO }}:latest .
+          docker push ${{ secrets.DOCKER_REPO }}:latest
+
+      # 4. EC2 배포
+      - name: Deploy on EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd ~/Evertale-infra
+            sudo docker-compose down
+            sudo docker-compose pull
+            sudo docker-compose up -d
+            sudo docker image prune -f
