@@ -37,7 +37,7 @@ jobs:
           username: ${{ secrets.EC2_USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd ~/EverTale-infra
+            cd /home/ubuntu/EverTale-infra
             
             sudo docker-compose down
             sudo docker-compose pull
