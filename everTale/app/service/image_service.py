@@ -3,7 +3,6 @@ from io import BytesIO
 from uuid import uuid4
 from typing import List
 
-
 from ..config import OPENAI_API_KEY
 from openai import OpenAI
 import requests
@@ -57,6 +56,43 @@ pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
 print("MPS available:", torch.backends.mps.is_available())
 print("MPS built:", torch.backends.mps.is_built())
 
+
+# 공통: S3 업로드 유틸
+def make_s3_key(prefix: str = "generated_images", ext: str = "png") -> str:
+    filename = f"{uuid4().hex}.{ext.lstrip('.')}"
+    return f"{prefix.rstrip('/')}/{filename}"
+
+def s3_public_url(key: str) -> str:
+    return f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{key.lstrip('/')}"
+
+def upload_png_bytes_to_s3(
+    file_like: BytesIO,
+    key_prefix: str = "generated_images",
+    content_type: str = "image/png"
+) -> str:
+    if hasattr(file_like, "seek"):
+        try:
+            file_like.seek(0)
+        except Exception:
+            pass
+
+    key = make_s3_key(prefix=key_prefix, ext="png")
+
+    s3_client.upload_fileobj(
+        file_like,
+        S3_BUCKET_NAME,
+        key,
+        ExtraArgs={"ContentType": content_type}
+    )
+    return s3_public_url(key)
+
+# 이미지 생성 함수들
+NEGATIVE_PROMPT = (
+    "lowres, bad anatomy, blurry, ugly, bad hands, extra fingers, cropped, poorly drawn, nsfw, "
+    "bad face, bad eyes, bad mouth, deformed face, disfigured, mutated, extra eyes, extra mouth, "
+    "poorly drawn face, ugly face, missing eyes, missing mouth, malformed face, asymmetrical eyes, blurry face"
+)
+
 def generate_init_character_image(
     sketch_bytes: bytes,
     name: str,
@@ -75,11 +111,7 @@ def generate_init_character_image(
             f"who is {', '.join(personalities)}. "
             f"{image_description.strip().capitalize()}"
         ),
-        negative_prompt=(
-            "lowres, bad anatomy, blurry, ugly, bad hands, extra fingers, cropped, poorly drawn, nsfw, "
-            "bad face, bad eyes, bad mouth, deformed face, disfigured, mutated, extra eyes, extra mouth, "
-            "poorly drawn face, ugly face, missing eyes, missing mouth, malformed face, asymmetrical eyes, blurry face"
-        ),
+        negative_prompt=NEGATIVE_PROMPT,
         image=sketch_image,
         num_inference_steps=60,
         guidance_scale=12.5,
@@ -88,70 +120,30 @@ def generate_init_character_image(
 
     output_buffer = BytesIO()
     result.images[0].save(output_buffer, format="PNG")
-    output_buffer.seek(0)
 
-    filename = f"{uuid4().hex}.png"
-    s3_key = f"generated_images/{filename}"
-
-    s3_client.upload_fileobj(
-        output_buffer,
-        S3_BUCKET_NAME,
-        s3_key,
-        ExtraArgs={"ContentType": "image/png"}
-    )
-
-    image_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
-
-    return image_url
+    return upload_png_bytes_to_s3(output_buffer, key_prefix="generated_images")
 
 def generate_controlnet_image(sketch_bytes: bytes, prompt: str, genre: str) -> str:
-    # 1. 스케치 이미지 전처리
     sketch_image = Image.open(BytesIO(sketch_bytes)).convert("RGB").resize((512, 512))
 
-    # TODO: 장르별 배경 및 분위기 설정할 것
-
-    # 2. 모델 추론
     result = pipe(
         prompt="ultra detailed, dreamy cheerful atmosphere, anime style, soft light, pastel color, " + prompt,
-        negative_prompt=(
-            "lowres, bad anatomy, blurry, ugly, bad hands, extra fingers, cropped, poorly drawn, nsfw, "
-            "bad face, bad eyes, bad mouth, deformed face, disfigured, mutated, extra eyes, extra mouth, "
-            "poorly drawn face, ugly face, missing eyes, missing mouth, malformed face, asymmetrical eyes, blurry face"
-        ),
+        negative_prompt=NEGATIVE_PROMPT,
         image=sketch_image,
         num_inference_steps=60,
         guidance_scale=12.5,
         controlnet_conditioning_scale=0.8
     )
 
-    # 3. 결과 이미지 메모리 버퍼에 저장
     output_buffer = BytesIO()
     result.images[0].save(output_buffer, format="PNG")
-    output_buffer.seek(0)
 
-    filename = f"{uuid4().hex}.png"
-    s3_key = f"generated_images/{filename}"
-
-    # S3 업로드
-    s3_client.upload_fileobj(
-        output_buffer,
-        S3_BUCKET_NAME,
-        s3_key,
-        ExtraArgs={"ContentType": "image/png"}
-    )
-
-    # URL로 완성
-    image_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
-
-    return image_url
-
+    return upload_png_bytes_to_s3(output_buffer, key_prefix="generated_images")
 
 def generate_dalle_image(prompt: str, genre: str) -> str:
     try:
-        # 1. 프롬프트에 장르 정보 반영 (선택적)
         combined_prompt = f"{genre} 스타일의 장면, " + prompt
 
-        # 2. OpenAI API로 이미지 생성 요청
         response = client.images.generate(
             model="dall-e-3",
             prompt=combined_prompt,
@@ -160,30 +152,14 @@ def generate_dalle_image(prompt: str, genre: str) -> str:
             quality="standard",
             response_format="url"
         )
-
         image_url_from_openai = response.data[0].url
-
     except Exception as e:
         raise Exception(f"OpenAI DALL·E 3 이미지 생성 실패: {e}")
 
-    # 3. 이미지 다운로드
     image_response = requests.get(image_url_from_openai)
     if image_response.status_code != 200:
         raise Exception("OpenAI DALL·E 3 이미지 다운로드 실패")
 
     image_bytes = BytesIO(image_response.content)
+    return upload_png_bytes_to_s3(image_bytes, key_prefix="generated_images")
 
-    # 4. S3 업로드
-    filename = f"{uuid4().hex}.png"
-    s3_key = f"generated_images/{filename}"
-
-    s3_client.upload_fileobj(
-        image_bytes,
-        S3_BUCKET_NAME,
-        s3_key,
-        ExtraArgs={"ContentType": "image/png"}
-    )
-
-    # 5. S3 URL 반환
-    s3_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
-    return s3_url
