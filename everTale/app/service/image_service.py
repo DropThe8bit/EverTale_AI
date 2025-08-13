@@ -1,6 +1,8 @@
 import os
 from io import BytesIO
 from uuid import uuid4
+from typing import List
+
 
 from ..config import OPENAI_API_KEY
 from openai import OpenAI
@@ -55,6 +57,52 @@ pipe.scheduler = UniPCMultistepScheduler.from_config(pipe.scheduler.config)
 print("MPS available:", torch.backends.mps.is_available())
 print("MPS built:", torch.backends.mps.is_built())
 
+def generate_init_character_image(
+    sketch_bytes: bytes,
+    name: str,
+    age: int,
+    gender: str,
+    personalities: List[str],
+    image_description: str
+) -> str:
+    sketch_image = Image.open(BytesIO(sketch_bytes)).convert("RGB").resize((512, 512))
+
+    result = pipe(
+        prompt=(
+            f"A character named {name}, "
+            f"{age} years old, "
+            f"{'a boy' if gender.lower() == 'male' else 'a girl'}, "
+            f"who is {', '.join(personalities)}. "
+            f"{image_description.strip().capitalize()}"
+        ),
+        negative_prompt=(
+            "lowres, bad anatomy, blurry, ugly, bad hands, extra fingers, cropped, poorly drawn, nsfw, "
+            "bad face, bad eyes, bad mouth, deformed face, disfigured, mutated, extra eyes, extra mouth, "
+            "poorly drawn face, ugly face, missing eyes, missing mouth, malformed face, asymmetrical eyes, blurry face"
+        ),
+        image=sketch_image,
+        num_inference_steps=60,
+        guidance_scale=12.5,
+        controlnet_conditioning_scale=0.8
+    )
+
+    output_buffer = BytesIO()
+    result.images[0].save(output_buffer, format="PNG")
+    output_buffer.seek(0)
+
+    filename = f"{uuid4().hex}.png"
+    s3_key = f"generated_images/{filename}"
+
+    s3_client.upload_fileobj(
+        output_buffer,
+        S3_BUCKET_NAME,
+        s3_key,
+        ExtraArgs={"ContentType": "image/png"}
+    )
+
+    image_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
+
+    return image_url
 
 def generate_controlnet_image(sketch_bytes: bytes, prompt: str, genre: str) -> str:
     # 1. 스케치 이미지 전처리

@@ -14,21 +14,20 @@ def generate_story(prompt: str) -> str:
     return response.choices[0].message.content
 
 
-def make_prompt(genre, world_view, title, name, age, gender, personalities):
+def make_prompt(genre, world_view, name, age, gender, personalities):
     personality_str = ", ".join(personalities)
     return (
         f"장르: {genre}\n"
-        f"동화 제목: {title}\n"
         f"주인공 이름은 {name}이고, 나이는 {age}살이며 성별은 {gender}야.\n"
         f"{world_view}를 참고해서 {personality_str} 성격을 가진 주인공의 흥미롭고 감동적인 동화의 시작 부분을 2~3줄 써줘.\n"
         f"아이들이 흥미롭게 읽을 수 있도록 상상력을 풍부하게 써줘."
     )
 
-def generate_story_from_character_info(genre, world_view, title, name, age, gender, personalities):
-    prompt = make_prompt(genre, world_view, title, name, age, gender, personalities)
+def generate_story_from_character_info(genre, world_view, name, age, gender, personalities):
+    prompt = make_prompt(genre, world_view, name, age, gender, personalities)
     return generate_story(prompt)
 
-def generate_prompt_for_next_story(scene_number, genre, previous, title, name, age, gender, personalities):
+def generate_prompt_for_next_story(scene_number, genre, previous, name, age, gender, personalities):
     personality_str = ", ".join(personalities)
 
     stage_map = {
@@ -45,7 +44,6 @@ def generate_prompt_for_next_story(scene_number, genre, previous, title, name, a
     stage = stage_map.get(scene_number, "알 수 없는 장면 번호입니다. scene_number는 1부터 8 사이여야 합니다.")
 
     return (
-        f"[동화 제목] {title}\n"
         f"[장르] {genre}\n"
         f"[현재 장면: {scene_number}페이지 / {stage}]\n\n"
         f"[이전 줄거리 요약]\n{previous}\n\n"

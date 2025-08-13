@@ -4,7 +4,6 @@ from pydantic import BaseModel, Field
 class InitStoryRequest(BaseModel):
     genre: str = Field(..., json_schema_extra={"example": "ADVENTURE"})
     worldView: str = Field(..., json_schema_extra={"example": "토로로는 모험을 좋아해요. 오늘은 또 어디로 모험을 떠날지 설레요."})
-    title: str = Field(..., json_schema_extra={"example": "토토로의 모험 여행"})
     name: str = Field(..., json_schema_extra={"example": "토토로"})
     age: int = Field(..., json_schema_extra={"example": 8})
     gender: str = Field(..., json_schema_extra={"example": "female"})
@@ -18,7 +17,6 @@ class NextStoryRequest(BaseModel):
     previous: str = Field(..., json_schema_extra={"example": "토토로는 첫 여행지로 북부의 마탑으로 향했어요. 그녀는 마법을 배우고 싶어해요"})
     sceneNum: int = Field(..., json_schema_extra={"example": "2"})
     genre: str = Field(..., json_schema_extra={"example": "ADVENTURE"})
-    title: str = Field(..., json_schema_extra={"example": "토토로의 모험 여행"})
     name: str = Field(..., json_schema_extra={"example": "토토로"})
     age: int = Field(..., json_schema_extra={"example": 8})
     gender: str = Field(..., json_schema_extra={"example": "female"})
