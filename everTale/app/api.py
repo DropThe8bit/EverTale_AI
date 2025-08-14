@@ -1,6 +1,6 @@
 
 import os, shutil, uuid
-
+from typing import List
 from fastapi import APIRouter, HTTPException
 from fastapi import File, UploadFile, Form
 from fastapi.responses import JSONResponse, StreamingResponse
@@ -8,14 +8,13 @@ from fastapi.responses import JSONResponse, StreamingResponse
 from . import dto
 from .service import image_service, quiz_service, story_service, voice_cloning_service
 
-router = APIRouter(prefix="/ai")
+router = APIRouter()
 
 @router.post("/init", response_model=dto.InitStoryResponse)
 def create_init_story(request: dto.InitStoryRequest):
     story = story_service.generate_story_from_character_info(
         genre=request.genre,
         world_view=request.worldView,
-        title=request.title,
         name=request.name,
         age=request.age,
         gender=request.gender,
@@ -29,7 +28,6 @@ def create_next_story(request: dto.NextStoryRequest):
         previous=request.previous,
         scene_number=request.sceneNum,
         genre=request.genre,
-        title=request.title,
         name=request.name,
         age=request.age,
         gender=request.gender,
@@ -59,6 +57,18 @@ def create_next_story_with_answer(request: dto.NextFromAnswerRequest):
     story = story_service.generate_story(prompt)
     return {"message": story}
 
+@router.post("/init-character-image")
+async def init_character_image(
+    sketch: UploadFile = File(...),
+    name: str = Form(...),
+    age: int = Form(...),
+    gender: str = Form(...),
+    personalities: List[str] = Form(...),
+    image_description: str = Form(...)
+):
+    sketch_bytes = await sketch.read()
+    image_url = image_service.generate_init_character_image(sketch_bytes, name, age, gender, personalities,image_description)
+    return JSONResponse(content={"image_url": image_url})
 
 @router.post("/generate-controlnet-image")
 async def generate_controlnet_image(
