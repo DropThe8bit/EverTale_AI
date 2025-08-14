@@ -44,7 +44,7 @@ device = (
 )
 
 pipe = StableDiffusionControlNetPipeline.from_pretrained(
-    "dreamlike-art/dreamlike-anime-1.0",
+    "Lykon/dreamshaper-8",
     controlnet=controlnet,
     torch_dtype=torch.float32,
     use_auth_token=HF_TOKEN
