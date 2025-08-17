@@ -30,7 +30,6 @@ venv/
 .DS_Store
 
 # 모델/데이터 다운로드 캐시
-models/
 outputs/
 *.ckpt
 *.safetensors
