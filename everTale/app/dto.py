@@ -1,5 +1,5 @@
 from typing import List
-from pydantic import BaseModel, Field, conlist
+from pydantic import BaseModel, Field
 
 class InitStoryRequest(BaseModel):
     genre: str = Field(..., json_schema_extra={"example": "ADVENTURE"})
