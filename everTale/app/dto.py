@@ -15,7 +15,7 @@ class InitStoryResponse(BaseModel):
 
 class NextStoryRequest(BaseModel):
     previous: str = Field(..., json_schema_extra={"example": "토토로는 첫 여행지로 북부의 마탑으로 향했어요. 그녀는 마법을 배우고 싶어해요"})
-    sceneNum: int = Field(..., json_schema_extra={"example": "2"})
+    pageNum: int = Field(..., json_schema_extra={"example": "2"})
     genre: str = Field(..., json_schema_extra={"example": "ADVENTURE"})
     name: str = Field(..., json_schema_extra={"example": "토토로"})
     age: int = Field(..., json_schema_extra={"example": 8})

@@ -26,7 +26,7 @@ def create_init_story(request: dto.InitStoryRequest):
 def create_next_story(request: dto.NextStoryRequest):
     prompt = story_service.generate_prompt_for_next_story(
         previous=request.previous,
-        scene_number=request.sceneNum,
+        page_number=request.pageNum,
         genre=request.genre,
         name=request.name,
         age=request.age,
