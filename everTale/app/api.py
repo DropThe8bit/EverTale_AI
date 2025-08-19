@@ -1,12 +1,12 @@
 
 import os, shutil, uuid
 from typing import List
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter
 from fastapi import File, UploadFile, Form
 from fastapi.responses import JSONResponse, StreamingResponse
 
 from . import dto
-from .service import image_service, quiz_service, story_service, voice_cloning_service
+from .service import image_service, quiz_service, story_service, voice_cloning_service, yolo_service
 
 router = APIRouter()
 
@@ -144,5 +144,14 @@ def delete_voice(request: dto.DeleteVoiceRequest):
         else:
             return JSONResponse(status_code=500, content={"error": "삭제 실패 또는 voice_key가 존재하지 않습니다."})
 
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"error": str(e)})
+    
+@router.post("/yolo", summary="객체 탐지 API", description="이미지를 리스트로 받아 객체를 탐지하고 이미지 index와 좌표를 반환합니다.")
+def detect_object(request: dto.YOLOImageUrlsRequest):
+    try:
+        object = yolo_service.detect_object(request.image_urls)
+        return JSONResponse(content=object)
+    
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})

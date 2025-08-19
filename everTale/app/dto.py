@@ -91,3 +91,16 @@ class DeleteVoiceRequest(BaseModel):
         description="삭제할 voice_key",
         json_schema_extra={"example": "9c74576ba45e6852f1c7d03"}
     )
+
+class YOLOImageUrlsRequest(BaseModel):
+    image_urls: List[str] = Field(
+        ...,
+        description="외부 서버에 업로드된 이미지 URL 리스트",
+        json_schema_extra={
+            "example": [
+                "https://example.com/image1.jpg",
+                "https://example.com/image2.jpg",
+                "https://example.com/image3.jpg"
+            ]
+        }
+    )

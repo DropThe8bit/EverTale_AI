@@ -1,5 +1,4 @@
 import os 
-import random 
 import requests
 
 from io import BytesIO
