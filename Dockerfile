@@ -20,7 +20,7 @@ RUN pip install --no-cache-dir --upgrade pip \
  && pip install --no-cache-dir opencv-python-headless ultralytics
 
 # 모델 파일을 이미지에 포함
-COPY models/yolov8n.pt /models/my_yolo_model.pt
+COPY models/my_yolov_model.pt /models/my_yolo_model.pt
 ENV YOLO_MODEL_PATH=/models/my_yolo_model.pt
 
 # 4. 전체 코드 복사
