@@ -16,8 +16,8 @@ WORKDIR /app
 # 3. 의존성만 먼저 복사 → 캐시 최대 활용
 COPY everTale/requirements.txt ./requirements.txt
 RUN pip install --no-cache-dir --upgrade pip \
- && pip install --no-cache-dir -r /app/requirements.txt \
- && pip install --no-cache-dir opencv-python-headless ultralytics
+ && pip install --no-cache-dir -r /app/requirements.txt opencv-python-headless ultralytics
+
 
 # 모델 파일을 이미지에 포함
 COPY models/my_yolo_model.pt /models/my_yolo_model.pt

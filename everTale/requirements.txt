@@ -14,7 +14,7 @@ tokenizers==0.19.1
 # --- API / 서버 ---
 fastapi==0.115.6        # (너가 쓰는 0.115.x 라인 유지, 너무 최신 patch는 피함)
 uvicorn==0.30.6         # 안정 버전
-starlette==0.38.5       # fastapi 0.115.x와 검증된 조합
+starlette
 
 # --- 유틸 ---
 numpy==1.26.4           # torch 2.3.x와 널리 쓰이는 안정 버전
