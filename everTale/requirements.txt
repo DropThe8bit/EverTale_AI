@@ -1,36 +1,38 @@
 # --- Diffusers/Transformers/Accelerate ---
-diffusers==0.29.0
-transformers==4.42.4
-accelerate==0.32.1
-safetensors==0.4.3
-huggingface-hub==0.23.4
-tokenizers==0.19.1
-peft==0.11.1
+diffusers==0.33.1
+transformers==4.52.4
+accelerate==1.8.1
+safetensors==0.5.3
+huggingface-hub==0.33.0
+tokenizers==0.21.1
+peft==0.14.0
 
 # --- API / Server ---
-fastapi==0.115.6
-uvicorn==0.30.6
-starlette==0.41.2           # ★ FastAPI 0.115.x와 호환 핀
+fastapi==0.115.13
+uvicorn==0.34.3
+starlette==0.46.2
 
 # --- Utils ---
-numpy>=2.0,<2.3
-pillow==10.4.0
-requests==2.32.3
-tqdm==4.66.4
-psutil==5.9.8
-python-dotenv==1.0.1
-python-multipart==0.0.9
+numpy==2.0.2                  # ← OpenCV 4.12, pandas 2.3.1와 호환
+pillow==11.2.1
+requests==2.32.4
+tqdm==4.67.1
+psutil==7.0.0
+python-dotenv==1.1.0
+python-multipart==0.0.20
 PyYAML==6.0.2
-regex==2024.5.15
-typing_extensions==4.12.2
-fsspec==2024.6.1
-pandas==2.3.1                # (정말 쓰면 유지, 아니면 삭제)
+regex==2024.11.6
+typing_extensions==4.14.0
+fsspec==2025.5.1             # (문제 없으면 유지, 이슈시 2024.x로 낮추기)
+pandas==2.3.1
+scipy==1.13.1
+Jinja2==3.1.6                 # (템플릿 쓰면 유지)
 
 # --- YOLO / OpenCV ---
-ultralytics
-ultralytics-thop==2.0.15     # ★ YOLO가 내부 참조
-opencv-python-headless==4.12.0.88  # ★ 서버/컨테이너용 (GUI 의존 제거)
+ultralytics==8.3.181
+ultralytics-thop==2.0.15
+opencv-python-headless==4.12.0.88  # ← 서버용. GUI 의존 제거
 
 # --- Cloud / LLM ---
-openai>=1.30.0
-boto3==1.35.24
+openai==1.89.0
+boto3==1.38.45
