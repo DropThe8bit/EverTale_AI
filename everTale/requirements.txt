@@ -1,23 +1,19 @@
-# --- PyTorch stack (이미지에 포함되지만 버전 명시해두면 좋음) ---
-torch==2.3.1
-torchvision==0.18.1
-torchaudio==2.3.1
-
-# --- Diffusers/Transformers/Accelerate (안정 조합) ---
+# --- Diffusers/Transformers/Accelerate ---
 diffusers==0.29.0
 transformers==4.42.4
 accelerate==0.32.1
 safetensors==0.4.3
 huggingface-hub==0.23.4
 tokenizers==0.19.1
+peft==0.11.1
 
-# --- API / 서버 ---
-fastapi==0.115.6        # (너가 쓰는 0.115.x 라인 유지, 너무 최신 patch는 피함)
-uvicorn==0.30.6         # 안정 버전
-starlette
+# --- API / Server ---
+fastapi==0.115.6
+uvicorn==0.30.6
+starlette==0.41.2           # ★ FastAPI 0.115.x와 호환 핀
 
-# --- 유틸 ---
-numpy==1.26.4           # torch 2.3.x와 널리 쓰이는 안정 버전
+# --- Utils ---
+numpy==1.26.4
 pillow==10.4.0
 requests==2.32.3
 tqdm==4.66.4
@@ -28,18 +24,13 @@ PyYAML==6.0.2
 regex==2024.5.15
 typing_extensions==4.12.2
 fsspec==2024.6.1
+pandas==2.3.1                # (정말 쓰면 유지, 아니면 삭제)
+
+# --- YOLO / OpenCV ---
 ultralytics
+ultralytics-thop==2.0.15     # ★ YOLO가 내부 참조
+opencv-python-headless==4.12.0.88  # ★ 서버/컨테이너용 (GUI 의존 제거)
 
-# --- 선택(LLM LoRA 등에 필요하면) ---
-peft==0.11.1
-
-# --- 필요 시만 추가 (성공/실패 갈릴 수 있으므로 초기엔 제외 권장) ---
-# xformers==0.0.27.post2
-
-# --- OpenAI SDK (필수 추가) ---
+# --- Cloud / LLM ---
 openai>=1.30.0
-
-# --- AWS SDK ---
 boto3==1.35.24
-
-
