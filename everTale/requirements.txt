@@ -39,4 +39,7 @@ peft==0.11.1
 # --- OpenAI SDK (필수 추가) ---
 openai>=1.30.0
 
+# --- AWS SDK ---
+boto3==1.35.24
+
 
