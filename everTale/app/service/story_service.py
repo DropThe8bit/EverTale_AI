@@ -186,7 +186,7 @@ def make_initial_prompt(genre, world_view, name, age, gender, personalities) -> 
         f"[금지]\n"
         f"- " + "\n- ".join(guardrails["forbidden"]) + "\n\n"                                                                                     
         f"[출력 형식]\n"
-        f"- 한국어로 3~5문장.\n"
+        f"- 한국어로 7~8문장.\n"
         f"- 문단 머리표, 번호, 메타설명 없이 순수 서사만 출력.\n"
         f"- 마지막 문장은 다음 장면이 기대되게 가볍게 여운을 남김.\n\n"
         f"[이어서 작성]\n"
@@ -207,7 +207,7 @@ def generate_prompt_for_next_story(
     g = genre_guides.get(genre, genre_guides["ADVENTURE"])
     beat = beat_map.get(page_number, beat_map[1])
 
-    return (
+    prompt = f"""
         f"[역할]\n"
         f"너는 유아·아동 대상 동화 작가야. 번역투를 피하고 자연스러운 한국어 구어체로, 이전 줄거리에 자연스럽게 이어지게 작성해줘.\n\n"
         f"[장르]\n"
@@ -235,6 +235,114 @@ def generate_prompt_for_next_story(
         f"- 8페이지면 따뜻하게 마무리.\n\n"
         f"[이어서 작성]\n"
         f"위의 정보를 바탕으로 {page_number}번째 장면을 이어서 써줘."
-    )
+    """
+    return generate_story(prompt)
 
 
+def generate_question_for_next_story(
+    page_number: int,
+    genre: str,
+    previous: str,
+    name: str,
+    age: int,
+    gender: str,
+    personalities: list[str],
+) -> str:
+    personality_str = ", ".join(personalities)
+    g = genre_guides.get(genre, genre_guides["ADVENTURE"])
+    beat = beat_map.get(page_number, beat_map[1])
+
+    prompt = f"""
+        f"[역할]\n"
+        f"너는 유아·아동 대상 동화 작가야. 이전 줄거리와 주인공 정보를 참고해, 아이가 다음 이야기를 상상할 수 있도록 질문을 만들어줘.\n\n"
+        f"[장르]\n"
+        f"{genre} — 톤: {g['tone']} | 배경: {g['setting']} | 힌트: {g['hint']}\n\n"
+        f"[현재 장면] {page_number}페이지 / {beat['label']}\n"
+        f"- 장면 목적: {beat['goal']}\n"
+        f"- 반드시 반영: 이전 줄거리와 이어져야 하고, 주인공의 성격과 나이에 맞는 질문이어야 함.\n"
+        f"- 힌트: {', '.join(beat.get('hint', [])) if beat.get('hint') else '없음'}\n\n"
+        f"[이전 줄거리 요약]\n{previous}\n\n"
+        f"[주인공 정보]\n"
+        f"- 이름: {name}, 나이: {age}살, 성별: {gender}, 성격: {personality_str}\n\n"
+        f"[출력 규칙]\n"
+        f"- 한국어 질문 한 문장.\n"
+        f"- 아이가 선택하거나 상상으로 답할 수 있게 열려 있어야 함.\n"
+        f"- 예: '~해야 할까?' 등.\n"
+        f"- 기승전결의 흐름에 어울리도록 상황을 반영.\n\n"
+        f"[작성 요청]\n"
+        f"위 정보를 바탕으로 다음 줄거리를 이어가기 위한 질문을 1개 생성해줘."
+    """
+    return generate_story(prompt)
+
+def generate_story_from_question_and_answer(
+    question: str,
+    answer: str,
+    previous: str,
+    page_number: int,
+    genre: str,
+    name: str,
+    age: int,
+    gender: str,
+    personalities: list[str],
+) -> str:
+    # 간단 전처리: 공백 정리 및 과도한 길이 컷
+    def _clean(s: str, max_len: int = 1200) -> str:
+        s = " ".join((s or "").split())
+        return s[:max_len]
+
+    question = _clean(question, 200)
+    answer = _clean(answer, 300)
+    previous = _clean(previous, 1200)
+
+    personalities_str = ", ".join((personalities or [])[:6])
+    g = genre_guides.get(genre, genre_guides["ADVENTURE"])
+    beat = beat_map.get(page_number, beat_map[1])
+
+    prompt = f"""
+[역할]
+너는 유아·아동 대상 대화형 동화 작가다. 아이가 이해하기 쉬운 말로 따뜻하게 쓴다.
+
+[장르]
+{genre} — 톤: {g['tone']} | 배경: {g['setting']} | 힌트: {g.get('hint','')}
+
+[현재 장면] {page_number}페이지 / {beat['label']}
+- 장면 목적: {beat['goal']}
+- 반드시 포함: {', '.join(beat.get('must', [])) if beat.get('must') else '자연스러운 전개'}
+- 힌트: {', '.join(beat.get('hint', [])) if beat.get('hint') else '없음'}
+- 장면 마무리: {beat.get('ending','')} (선택적)
+
+[이전 줄거리]
+{previous}
+
+[주인공 정보]
+- 이름: {name} ({gender}, {age}세)
+- 성격: {personalities_str}
+
+[아이에게 던진 질문]
+{question}
+
+[아이의 대답]
+{answer}
+
+[작성 지침]
+- 아이의 대답을 **핵심 사건/선택**으로 직접 반영하여 **인과적으로** 이어질 것.
+- {genre} 톤을 유지하고, {name}의 성격({personalities_str})이 행동과 말투에 드러나게 할 것.
+- {beat['label']} 단계의 목적({beat['goal']})을 충족할 것.
+- 과도한 공포·폭력·비하·설교조는 금지. 설명 과다 대신 **장면 이미지/행동** 위주.
+- 대사는 0~1문장만 필요 시 사용.
+
+[스타일 규칙]
+- """ + "\n- ".join(guardrails["style_rules"]) + f"""
+
+[금지]
+- """ + "\n- ".join(guardrails["forbidden"]) + f"""
+
+[출력 형식]
+- 한국어로 **7~8문장**의 순수 서사만 출력(머리표/번호/해설 금지).
+- 8페이지면 따뜻하게 마무리, 아니면 다음 장면으로 이어질 수 있도록 작성한다..
+
+[작성 요청]
+위 정보를 바탕으로 다음 장면을 작성하라.
+""".strip()
+
+    return generate_story(prompt)
