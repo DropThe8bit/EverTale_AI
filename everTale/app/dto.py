@@ -22,28 +22,35 @@ class NextStoryRequest(BaseModel):
     gender: str = Field(..., json_schema_extra={"example": "female"})
     personalities: List[str] = Field(..., json_schema_extra={"example": ["용감함", "씩씩함"]})
 
-
-class QuestionRequest(BaseModel):
-    previous: str = Field(..., description="이전 줄거리")
-
-    class Config:
-        json_schema_extra = {
-            "example": {
-                "previous": "주인공은 친구와 함께 숲을 탐험하고 있었습니다."
-            }
-        }
+from pydantic import BaseModel, Field
+from typing import List
 
 class NextFromAnswerRequest(BaseModel):
-    previous: str = Field(..., description="이전 줄거리")
+    question: str = Field(..., description="이전에 던진 질문")
     answer: str = Field(..., description="아이의 대답")
+    previous: str = Field(..., description="이전 줄거리")
+    pageNum: int = Field(..., description="현재 페이지 번호")
+    genre: str = Field(..., description="스토리 장르")
+    name: str = Field(..., description="주인공 이름")
+    age: int = Field(..., description="주인공 나이")
+    gender: str = Field(..., description="주인공 성별")
+    personalities: List[str] = Field(..., description="주인공 성격 리스트")
 
     class Config:
         json_schema_extra = {
             "example": {
-                "previous": "주인공은 친구와 함께 숲을 탐험하고 있었습니다.",
-                "answer": "주인공은 용감하게 동굴 안으로 들어가야 해요."
+                "question": "주인공은 어떻게 해야 할까?",
+                "answer": "용감하게 문을 열어야 해요.",
+                "previous": "토토로는 첫 여행지로 북부의 마탑으로 향했어요...",
+                "pageNum": 2,
+                "genre": "ADVENTURE",
+                "name": "토토로",
+                "age": 8,
+                "gender": "female",
+                "personalities": ["용감함", "씩씩함"]
             }
         }
+
 
 class QuizRequest(BaseModel):
     previous: str = Field(...,json_schema_extra={"example":"숲 초입 나무 밑에서 부스럭 부스럭 소리가 들렸어요. 토로로는 나무로 가까이 다가갔어요. 찍찍찍..찍찍 소리는 점점 커지는데... 맙소사 아기 다람쥐가 나무에서 떨어서 풀 사이에 힘겹게 숨을 쉬고 있었어요."})

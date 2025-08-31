@@ -38,23 +38,31 @@ def create_next_story(request: dto.NextStoryRequest):
 
 
 @router.post("/question")
-def create_question(request: dto.QuestionRequest):
-    prompt = (
-        f"이전 장면:\n{request.previous}\n\n"
-        "아이의 참여를 유도하기 위해 질문 하나를 던져줘. 예를 들어 '주인공은 어떻게 해야 할까?'처럼 "
-        "선택이나 상상을 이끌어낼 수 있도록 해줘."
+def create_question(request: dto.NextStoryRequest):
+    question = story_service.generate_question_for_next_story(
+        previous=request.previous,
+        page_number=request.pageNum,
+        genre=request.genre,
+        name=request.name,
+        age=request.age,
+        gender=request.gender,
+        personalities=request.personalities
     )
-    question = story_service.generate_story(prompt)
     return {"message": question}
 
 @router.post("/next-from-answer")
 def create_next_story_with_answer(request: dto.NextFromAnswerRequest):
-    prompt = (
-        f"이전 장면:\n{request.previous}\n"
-        f"아이의 대답: {request.answer}\n\n"
-        "이 대답을 반영해서 다음 장면의 줄거리를 상상력 있게 이어서 써줘. 2~3문장으로 자연스럽게 전개해줘."
+    story = story_service.generate_story_from_question_and_answer(
+        question=request.question,
+        answer=request.answer,
+        previous=request.previous,
+        page_number=request.pageNum,
+        genre=request.genre,
+        name=request.name,
+        age=request.age,
+        gender=request.gender,
+        personalities=request.personalities
     )
-    story = story_service.generate_story(prompt)
     return {"message": story}
 
 @router.post("/init-character-image")
