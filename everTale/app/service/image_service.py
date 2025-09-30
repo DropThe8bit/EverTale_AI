@@ -225,10 +225,10 @@ GENRE_NEGATIVES = {
 }
 
 GENRE_PARAMS = {
-    "adventure": {"controlnet_conditioning_scale": 0.85, "guidance_scale": 12.5},
-    "friendship": {"controlnet_conditioning_scale": 0.75, "guidance_scale": 11.5},
-    "moral": {"controlnet_conditioning_scale": 0.80, "guidance_scale": 12.0},
-    "family": {"controlnet_conditioning_scale": 0.78, "guidance_scale": 12.0},
+    "adventure": {"controlnet_conditioning_scale": 0.8, "guidance_scale": 12.5},
+    "friendship": {"controlnet_conditioning_scale": 0.8, "guidance_scale": 12.5},
+    "moral": {"controlnet_conditioning_scale": 0.8, "guidance_scale": 12.5},
+    "family": {"controlnet_conditioning_scale": 0.8, "guidance_scale": 12.5},
 }
 
 _SCN_SYSTEM = (
@@ -287,7 +287,7 @@ def _cleanup_prompt(s: str, max_len: int = 320) -> str:
 def build_scene_prompt(prompt_main: str) -> str:
     try:
         resp = client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             temperature=0.6,
             messages=[
                 {"role": "system", "content": _SCN_SYSTEM},
