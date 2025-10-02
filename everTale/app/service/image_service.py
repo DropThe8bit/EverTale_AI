@@ -252,14 +252,11 @@ def _select_top_traits(traits, k=3):
     return ", ".join([t.strip() for t in traits if t.strip()][:k])
 
 def build_character_prompt(name: str, age: int, gender: str, personalities: list, image_description: str) -> str:
-    gender_short = "boy" if gender.lower().startswith("m") else "girl"
-    top_traits   = _select_top_traits(personalities, k=3)
+    gender_short = "male" if gender.lower().startswith("m") else "female"
     image_desc_short = build_scene_prompt(image_description.strip())
-    core = f"{gender_short}, {top_traits}, {image_desc_short}"
-    prompt = f"{STYLE_SUFFIX_INIT}, {core}"
+    core = f"one character only, {gender_short}, {image_desc_short}"
+    prompt = f"{core}, {STYLE_SUFFIX_INIT}"
     return (prompt[:320]).rstrip(", ")
-
-
 
 def _cleanup_prompt(s: str, max_len: int = 320) -> str:
     if not s:
