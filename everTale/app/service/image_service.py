@@ -199,7 +199,12 @@ pipe = load_lora(pipe)
 
 
 # 프롬프트/파라미터
-STYLE_SUFFIX_INIT = "child friendly, storybook, ultra detailed, dreamy cheerful atmosphere, anime style, anime face, soft light, pastel color, soft shading, masterpiece, best quality"
+STYLE_SUFFIX_ANIMAL = (
+    "child friendly, storybook, ultra detailed, dreamy cheerful atmosphere, "
+    "cute animal illustration, storybook animal art, cartoon animal style, "
+    "soft light, pastel color, soft shading, masterpiece, best quality"
+)
+STYLE_SUFFIX_HUMAN = "child friendly, storybook, ultra detailed, dreamy cheerful atmosphere, anime style, anime face, soft light, pastel color, soft shading, masterpiece, best quality"
 STYLE_SUFFIX_SCN  = "child friendly, storybook, ultra detailed, dreamy cheerful atmosphere, anime style, anime face, soft light, pastel color, soft shading, masterpiece, best quality"
 
 NEGATIVE_PROMPT = (
@@ -225,10 +230,10 @@ GENRE_NEGATIVES = {
 }
 
 GENRE_PARAMS = {
-    "adventure": {"controlnet_conditioning_scale": 0.8, "guidance_scale": 12.5},
-    "friendship": {"controlnet_conditioning_scale": 0.8, "guidance_scale": 12.5},
-    "moral": {"controlnet_conditioning_scale": 0.8, "guidance_scale": 12.5},
-    "family": {"controlnet_conditioning_scale": 0.8, "guidance_scale": 12.5},
+    "adventure": {"controlnet_conditioning_scale": 0.8, "guidance_scale": 12},
+    "friendship": {"controlnet_conditioning_scale": 0.8, "guidance_scale": 12},
+    "moral": {"controlnet_conditioning_scale": 0.8, "guidance_scale": 12},
+    "family": {"controlnet_conditioning_scale": 0.8, "guidance_scale": 12},
 }
 
 _SCN_SYSTEM = (
@@ -252,10 +257,23 @@ def _select_top_traits(traits, k=3):
     return ", ".join([t.strip() for t in traits if t.strip()][:k])
 
 def build_character_prompt(name: str, age: int, gender: str, personalities: list, image_description: str) -> str:
-    gender_short = "male" if gender.lower().startswith("m") else "female"
+    gender_lower = gender.lower()
+
+    if gender_lower.startswith("m"):
+        gender_short = "male"
+    elif gender_lower.startswith("f"):
+        gender_short = "female"
+    elif gender_lower.startswith("a"):
+        gender_short = "animal"
+    else:
+        gender_short = "female"
+
     image_desc_short = build_scene_prompt(image_description.strip())
     core = f"one character only, {gender_short}, {image_desc_short}"
-    prompt = f"{core}, {STYLE_SUFFIX_INIT}"
+
+    style_suffix = STYLE_SUFFIX_ANIMAL if gender_short == "animal" else STYLE_SUFFIX_HUMAN
+
+    prompt = f"{core}, {style_suffix}"
     return (prompt[:320]).rstrip(", ")
 
 def _cleanup_prompt(s: str, max_len: int = 320) -> str:
@@ -283,6 +301,8 @@ def _cleanup_prompt(s: str, max_len: int = 320) -> str:
 
 def build_scene_prompt(prompt_main: str) -> str:
     try:
+        print("[build_scene_prompt] prompt_main:", repr(prompt_main))  # 입력 확인
+
         resp = client.chat.completions.create(
             model="gpt-4o",
             temperature=0.6,
@@ -292,20 +312,30 @@ def build_scene_prompt(prompt_main: str) -> str:
             ],
             timeout=20,  # seconds
         )
+
+        print("[build_scene_prompt] raw resp:", resp)  # 전체 응답 확인
+
         text = resp.choices[0].message.content or ""
+        print("[build_scene_prompt] extracted text:", repr(text))  # 모델이 뱉은 원문
+
         text = _cleanup_prompt(text, max_len=320)
+        print("[build_scene_prompt] cleaned text:", repr(text))  # 정제된 프롬프트
 
         if not text:
+            print("[build_scene_prompt] cleaned text empty, returning original.")
             return prompt_main
+
+        print("[build_scene_prompt] returning final:", repr(text))
         return text
 
-    except Exception:
+    except Exception as e:
+        print("[build_scene_prompt] Exception:", e)
         return _cleanup_prompt(prompt_main, max_len=320)
 
 
 def width_height():
     if device == "cuda":
-        return 1024, 1024
+        return 768, 768
     elif device == "mps":
         return 768, 768
     raise RuntimeError("[ERROR] width_height(): CPU path reached")
@@ -324,6 +354,8 @@ def generate_init_character_image(
 
     sketch_image = Image.open(BytesIO(sketch_bytes)).convert("RGB").resize((512, 512))
     prompt = build_character_prompt(name, age, gender, personalities, image_description)
+
+    print("[prompt]: {prompt}".format(prompt=prompt))
     width, height = width_height()
 
     with torch.inference_mode(), amp_autocast():
@@ -332,7 +364,7 @@ def generate_init_character_image(
             negative_prompt=NEGATIVE_PROMPT,
             image=sketch_image,
             num_inference_steps=50,
-            guidance_scale=12.5,
+            guidance_scale=12,
             controlnet_conditioning_scale=0.8,
             width=width,
             height=height,
@@ -351,14 +383,19 @@ def generate_controlnet_image(sketch_bytes: bytes, prompt: str, genre: str) -> s
     base_prompt = build_scene_prompt(prompt)
 
     full_prompt, genre_negative, genre_params = compose_prompts(base_prompt, genre)
-    negative_prompt = merge_negative_prompt(NEGATIVE_PROMPT, genre_negative)
+    prompt = f"{full_prompt}, {STYLE_SUFFIX_HUMAN}"
+    print("[prompt]: {prompt}".format(prompt=prompt))
 
-    guidance_scale = genre_params.get("guidance_scale", 12.5)
-    control_scale = genre_params.get("controlnet_conditioning_scale", 0.8)
+    negative_prompt = merge_negative_prompt(NEGATIVE_PROMPT, genre_negative)
+    guidance_scale = genre_params.get("guidance_scale")
+    control_scale = genre_params.get("controlnet_conditioning_scale")
+    print("[genre]",genre)
+    print("[genre_param]",genre_params)
+
 
     with torch.inference_mode(), amp_autocast():
         result = pipe(
-            prompt=full_prompt,
+            prompt=prompt,
             negative_prompt=negative_prompt,
             image=sketch_image,
             num_inference_steps=50,
