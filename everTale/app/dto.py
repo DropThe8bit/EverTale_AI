@@ -65,8 +65,6 @@ class QuizResponse(BaseModel):
 
 class DalleImageRequest(BaseModel):
     prompt: str = Field(...,json_schema_extra={"example":"A cute rabbit flying with balloons across the sky"})
-    genre: str = Field(...,json_schema_extra={"example":"모험"})
-
 
 class ControlNetImageRequest(BaseModel):
     prompt: str = Field(..., description="줄거리")

@@ -91,7 +91,7 @@ async def generate_controlnet_image(
 @router.post("/generate-dalle-image")
 async def generate_dalle_image(request: dto.DalleImageRequest):
     try:
-        image_url = image_service.generate_dalle_image(request.prompt, request.genre)
+        image_url = image_service.generate_dalle_image(request.prompt)
         return JSONResponse(content={"image_url": image_url})
     except Exception as e:
         return JSONResponse(status_code=500, content={"error": str(e)})

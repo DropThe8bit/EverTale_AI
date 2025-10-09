@@ -364,7 +364,7 @@ def generate_init_character_image(
             negative_prompt=NEGATIVE_PROMPT,
             image=sketch_image,
             num_inference_steps=50,
-            guidance_scale=12,
+            guidance_scale=12.5,
             controlnet_conditioning_scale=0.8,
             width=width,
             height=height,
