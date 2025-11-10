@@ -13,7 +13,7 @@ from ultralytics import YOLO
 import os, torch
 
 def _resolve_yolo_path() -> str:
-    path = os.getenv("YOLO_MODEL_PATH", "/models/my_yolo_model.pt")
+    path = os.getenv("YOLO_MODEL_PATH", "/models/my_yolo_model_v2.pt")
     if not os.path.exists(path):
         raise FileNotFoundError(f"YOLO model not found at: {path}")
     return path
