@@ -25,8 +25,8 @@ RUN pip install --no-cache-dir --upgrade pip \
 
 
 # 모델 파일을 이미지에 포함
-COPY models/my_yolo_model.pt /models/my_yolo_model.pt
-ENV YOLO_MODEL_PATH=/models/my_yolo_model.pt
+COPY models/my_yolo_model_v2.pt /models/my_yolo_model_v2.pt
+ENV YOLO_MODEL_PATH=/models/my_yolo_model_v2.pt
 
 # 4. 전체 코드 복사
 COPY . /app
