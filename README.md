@@ -59,3 +59,28 @@ ElevenLabs는 고품질의 감정 표현 가능한 Text-to-Speech (TTS) API를
 - **Hugging Face diffusers (Stable Diffusion + ControlNet)**: https://huggingface.co/docs/diffusers/index  
 - **ControlNet - scribble 모델**: https://huggingface.co/lllyasviel/sd-controlnet-scribble  
 - **Dreamshaper 모델 (Stable Diffusion 기반)**: https://huggingface.co/Lykon/dreamshaper-8
+
+<br>
+<hr>
+<br>
+
+## 🖼️ 이스터에그 : 객체탐지 Yolov8 모델
+
+일러스트 속 객체 탐지에 최적화된 YOLOv8 모델을 파인튜닝하여, 일러스트 내 특정 객체 좌표에 부모의 사랑이 담긴 음성 메시지를 숨겨둡니다. 아이가 동화를 읽으며 그림을 클릭할 때, 해당 좌표가 감지되면 숨겨진 이스터에그(음성 메시지)가 재생되어 놀이 요소처럼 즐길 수 있습니다.
+
+<br>
+
+### ✅ 사용 기술 요소 및 소트프웨어 패키지
+
+| 기술 요소 / 도구 | 역할 | 설명 |
+| --- | --- | --- |
+| **Python** | 주 개발 언어 | Google Colab 기반 스크립트 작성 |
+| **Google Colab** | 실행 환경 | 모델 파인튜닝, 사용자 입력, 파일 업로드, 결과 출력 등 처리 |
+| **Yolov8 Model** | AI모델 | 실시간 객체 탐지 분야에서 매우 높은 정확도와 속도를 동시에 목표로 하는 모델 |
+
+<br>
+
+### ✅  모델 URL
+
+- **Yolov8**: https://docs.ultralytics.com/ko/models/yolov8
+
