@@ -84,3 +84,72 @@ ElevenLabs는 고품질의 감정 표현 가능한 Text-to-Speech (TTS) API를
 
 - **Yolov8**: https://docs.ultralytics.com/ko/models/yolov8
 
+---
+## 디렉토리 구조
+```
+evertale_ai/
+├─ .github/ # Github Actions
+│
+├─ everTale/
+│  ├─ app/
+│  │  ├─ service # 기능별 비즈니스 로직 모음
+│  │  ├─ api.py # 엔드포인트 정의 및 서비스 호출 연결
+│  │  ├─ config.py # 환경변수 로딩 및 설정값 관리
+│  │  ├─ dto.py # 요청/응답 DTO 정의
+│  │  ├─ main.py # 서버 엔트리포인트
+│  │  └─ __init__.py
+│  ├─ static # 정적 리소스 저장
+│  ├─ .env # 로컬 실행용 환경변수
+|  └─ requirements.txt # Python 의존성 목록
+│
+├─ models # YOLO 모델 가중치/실험 파일 
+├─ Dockerfile
+├─ .gitignore
+└─ README.md
+```
+- `.github/`: CI/CD(예: GitHub Actions 배포), 이슈/PR 템플릿 등 협업 자동화 설정
+- `everTale/`: FastAPI 기반 AI 서버 코드가 들어있는 메인 패키지
+- `everTale/app/`: API 엔드포인트(`api.py`)와 설정(`config.py`), 요청/응답 스키마(`dto.py`), 서버 시작점(`main.py`), 그리고 기능 로직(`service/`)
+- `everTale/static/`: 실행 중 필요한 정적 파일(샘플/임시 결과물 등)을 저장하는 용도
+- `everTale/.env`: OpenAI 키, HuggingFace 토큰, 모델 경로 등 실행 환경변수를 담는 파일
+- `requirements.txt`: 로컬 실행을 위한 파이썬 라이브러리 의존성 목록
+- `models/`: YOLO 등 모델 가중치 파일(.pt)과 실험/검증 노트북(.ipynb)을 보관
+- `Dockerfile`: 동일한 환경에서 실행/배포가 가능하도록 도커 이미지를 빌드하는 설정
+
+---
+## 로컬 실행 방법
+### 1. 레포 내려받기(git clone)
+```
+git clone https://github.com/DropThe8bit/EverTale_AI.git evertale_ai
+cd evertale_ai
+```
+### 2. 가상환경 설치
+```
+conda create -n evertale-ai python=3.10 -y
+conda activate evertale-ai
+```
+### 3. requirements.txt 설치
+```
+pip install --upgrade pip
+pip install -r everTale/requirements.txt
+```
+### 4. .env 파일 생성
+- 실행 환경변수를 채워넣습니다.
+```
+OPENAI_API_KEY=
+HF_TOKEN=
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=
+S3_BUCKET_NAME=
+S3_BASE_URL=
+ELEVEN_API_KEY=
+YOLO_MODEL_PATH=
+```
+### 5. 로컬 서버 실행
+- 터미널에 아래 코드를 작성해 직접 실행합니다.
+```
+cd everTale
+uvicorn app.main:app --reload
+```
+
